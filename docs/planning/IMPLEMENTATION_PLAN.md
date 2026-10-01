@@ -1,6 +1,6 @@
 # FederatedHackathon implementation plan
 
-Version: 1.0 | Date: 2026-09-30 | Status: proposed implementation baseline
+Version: 1.1 | Date: 2026-09-30 | Status: proposed implementation baseline
 
 ## 1. Outcome and authority
 
@@ -27,7 +27,13 @@ The v1.0 specification supplies the architecture and scope. The separate review 
 
 Where the review proposes defaults, treat them as configurable policies to test, not proven optimal settings. Earliest qualifying L3 is the initial work-item selection policy; it is not automatic canonical promotion. Current-parent integration, risk policy, and constitution compliance still apply.
 
-The source documents remain unchanged. This plan is an engineering translation, not a claim that the system already exists.
+The source documents are identified by original-PDF SHA-256 hashes and committed reviewable text in [the source manifest](../sources/README.md). The source documents remain unchanged. This plan is an engineering translation, not a claim that the system already exists.
+
+### Early development signal and seed project
+
+P00-10 authors the seed project: a bounded browser puzzle in which a player moves through one room, operates a switch to open a door, reaches an exit, and saves/reloads progress. Its initial constitution and concrete automated/hybrid oracles define deterministic inputs, commands, pass thresholds, expected cost, and remaining human judgment. Startup/FPS constraints are measured on a declared environment; aesthetics do not become an automated build-pass claim. This is the initial engineering seed, not a genre requirement invented by the source spec. P04-08 builds and pins the seed repository and runnable oracle suite; P05/P06 explicitly depend on it, and P11 freezes its event versions.
+
+P00-11 schedules a development-only walking skeleton after minimal state/protocol contracts and the seed brief, before P01-P03 hardening. It uses one test contributor, temporary state adapters, a fake runner, and a real local bare remote to exercise the complete control flow, including a failed verification and retry. Record interface/state-machine discoveries and replace shortcuts deliberately. This experiment satisfies no phase, deployment, isolation, authority, or scale acceptance gate. Its purpose is early feedback, not a release milestone.
 
 ## 3. Initial technical decisions
 
@@ -121,9 +127,9 @@ Do not give calendar estimates before P00 and the real runner pilot establish ef
 
 ## 9. Repeated engineering checkpoints
 
-Every PR: review authority, concurrency, error behavior, scope, meaningful tests, documentation, and newly introduced debt. Every three merged feature PRs OR weekly while actively developing, whichever comes first: stop feature merges for a consolidation checkpoint. Review the combined main branch, remove redundant abstractions and dead code, resolve migration/API drift, reconcile TODO and docs, and complete required cleanup before resuming.
+Every PR: review authority, concurrency, error behavior, scope, meaningful tests, documentation, and newly introduced debt. Every three merged feature PRs OR weekly during active development (an implementation, cleanup, or operational-fix PR merged in the preceding seven days), whichever comes first: stop feature merges for a consolidation checkpoint. Review the combined main branch, remove redundant abstractions and dead code, resolve migration/API drift, reconcile TODO and docs, and complete required cleanup before resuming.
 
-Every phase: separate code/invariant review, consolidation/deslopping, and documentation/reproducibility gates. Every release: security, recovery, operator, and capacity gates. A failed checkpoint creates bounded corrective tasks; authority, security, budget, and data-loss defects block the next dependent phase.
+Every phase: C -> D -> R gates. Consolidate/deslop, finish documentation/reproducibility work, then perform the final code/invariant and documentation review on that combined state. Preliminary review may inform cleanup but cannot approve a subsequently changed commit. Changes after final review require renewed affected-scope review. Every release: security, recovery, operator, and capacity gates. A failed checkpoint creates bounded corrective tasks; authority, security, budget, and data-loss defects block the next dependent phase.
 
 The detailed rubric and evidence forms are in ENGINEERING_CHECKPOINTS.md. Reserve one consolidation slot per three feature PRs as a planning default; do not pad this with cosmetic churn or tests that simply mirror implementation. A no-change checkpoint is valid only with recorded evidence explaining why cleanup is unnecessary.
 
@@ -131,7 +137,7 @@ The detailed rubric and evidence forms are in ENGINEERING_CHECKPOINTS.md. Reserv
 
 Use domain unit tests for state transitions and policy; real PostgreSQL tests for concurrency, locking, idempotency, and event ordering; real Git tests for revision identity, CAS, rollback, and crash reconciliation; runner adversarial tests for isolation/caps; API/CLI/WebSocket/MCP parity tests; and browser checks for real operator and contributor workflows. Stubbed tests are useful locally but cannot prove external guarantees.
 
-The P10 baseline is 500 humans, 5,000 active agents, 2,000 advertised nodes, 1,000 simultaneous cells, 100 submissions/minute, and 50,000 presence/event updates/minute. Specify the split between ephemeral and durable updates. Distinguish offered, admitted, verified, and promoted rates. The spec's submission target is not a promise to execute 100 expensive validations per minute.
+The following are required qualification targets from Spec §31 for the announced initial event, not provisional review defaults: 500 humans, 5,000 active agents, 2,000 advertised nodes, 1,000 simultaneous cells, 100 submissions/minute, and 50,000 presence/event updates/minute. Specify the split between ephemeral and durable updates. Distinguish offered, admitted, verified, and promoted rates. They are target workload requirements, not achieved capacity or a production guarantee. A smaller rehearsal may use lower numbers but cannot claim target-event qualification. Review-proposed credit allocations, scheduling weights, lease durations, replication rewards, latency/error thresholds, and this plan's 60-minute/four-hour test durations are provisional engineering choices to validate and freeze before P10. The spec's submission target is not a promise to execute 100 expensive validations per minute.
 
 At P00 define benchmark latency/error targets and hardware profile; tune them with P04/P06 pilot data and freeze the event acceptance profile before P10. Include at least a 60-minute sustained target run, burst traffic, a deliberately constrained validator budget, and a recovery/soak run of at least four hours. Measure queue slope, age, repeated runner cost, invalidations per promotion, database lock pressure, reconnect behavior, and urgent-capacity protection. A bounded validator queue may defer/reject overload; its behavior must be documented, visible, and bounded.
 
@@ -155,6 +161,8 @@ Release blockers include unexplained authority gaps, unfenced promotion, unbound
 
 ## 13. Source coverage
 
+Verify section references against the [committed source text and hash manifest](../sources/README.md). P00-13 audits translation; these links identify evidence rather than implying that unimplemented tasks are complete.
+
 | Source sections / review topic | Primary phases |
 | --- | --- |
 | Spec 1-4, 34, 36: boundary and goals | P00 and all phase reviews |
@@ -163,6 +171,7 @@ Release blockers include unexplained authority gaps, unfenced promotion, unbound
 | Spec 9-13, 28: repository, lifecycle, evidence, integration, rollback, supersession | P03-P05, P09 |
 | Spec 14-16: governor, abuse, moderation | P02-P03, P06-P07, P10 |
 | Spec 18-21: interfaces, messaging, protocol, activity index | P06, P08 |
+| Spec 6, 22, 27: constitution, concrete game checks, milestones | P00-10, P04-08, P05-P06, P11-04; the seed design is a new engineering choice |
 | Spec 22-25: game checks, distributed validation, security, provenance | P03-P04, P07, P09 |
 | Spec 26-27: observability and director | P06, P08, P10 |
 | Spec 29-30: persistence, ordering, recovery | P01, P05, P07 |

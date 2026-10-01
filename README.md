@@ -12,4 +12,4 @@ Private computation is unrestricted. Shared operations are budgeted. Canonical r
 
 Status: planning only. No runtime, deployment, or scale capability is implemented yet.
 
-Planning inputs: Federated Swarm Hackathon Platform System Specification v1.0 and Federated Swarm Review Recommendations, supplied September 30, 2026.
+Planning inputs: Federated Swarm Hackathon Platform System Specification v1.0 and Federated Swarm Review Recommendations, supplied September 30, 2026. See the [source text and SHA-256 manifest](docs/sources/README.md) for verifiable inputs.

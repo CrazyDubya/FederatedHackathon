@@ -4,7 +4,7 @@ All tasks are initially unchecked. IDs are stable. Checking a task requires link
 
 For each active task record: implementer, reviewer, dependencies, PR, acceptance evidence, debt impact, documentation changes, and status. Status is planned / ready / active / blocked / review / complete. Store this in the task's issue or a linked phase record when implementation starts. Checkboxes summarize only complete status.
 
-Split each phase into the suggested PR slices below. Slice order follows dependencies; combine tiny tasks only when they form one coherent outcome. Do not bundle unrelated changes to avoid review. Every three merged feature PRs, or weekly during active development, run checkpoint RC-n before further feature merges. Number checkpoint records monotonically.
+Split each phase into the suggested PR slices below. Slice order follows dependencies; combine tiny tasks only when they form one coherent outcome. Do not bundle unrelated changes to avoid review. Every three merged feature PRs, or weekly during active development, run checkpoint RC-n before further feature merges. Number checkpoint records monotonically. Phase exit order is C -> D -> R: consolidate first, finish documentation, then review the final implementation and documentation together. Preliminary review may inform cleanup, but it is not phase approval. Later changes require renewed review of the affected scope.
 
 ## P00 - Establish the executable design
 
@@ -19,9 +19,13 @@ Dependencies: supplied spec and recommendations. Suggested slices: decisions; st
 - [ ] P00-07 Define threat model/trust boundaries covering hostile code, credential compromise, identity multiplication, collusion, supply chain, split brain, and output attacks.
 - [ ] P00-08 Define first-loop acceptance scenarios, load profiles, provisional latency/error/recovery objectives, benchmark hardware, and human-review capacity.
 - [ ] P00-09 Create source-to-task traceability and a prioritized risk register; assign owners to the highest-risk experiments.
-- [ ] P00-R Review design against every constitutional invariant; resolve ambiguities at authority, money/resource, and recovery boundaries.
+- [ ] P00-10 Author the seed-game brief, starter-repository layout, initial versioned constitution, first concrete work items, and reproducible oracle inputs/commands/thresholds. Define a bounded browser puzzle seed: move through one room, interact with a switch, open a door, reach an exit, and save/reload progress. Specify startup/performance measurement environment, forbidden changes, required checks, and human-only aesthetic criteria. Pin the seed commit and oracle version when built; P04-08 implements this project rather than an unrelated fixture; P05/P06 depend on its runnable baseline.
+- [ ] P00-11 Run a development-only walking skeleton immediately after P00-03/P00-04/P00-10 and before P01-P03 hardening: one test contributor, temporary state adapters, fake runner with forced pass/fail, and a real local bare Git remote. Exercise discover -> lease -> submit -> reserve -> fake verify -> select -> local CAS -> event -> unblock, plus one rejection/retry. Record contract/state mistakes and corrective tasks; discard or explicitly replace shortcuts. This experiment satisfies no phase, deployment, security, authority, or capacity acceptance gate.
+- [ ] P00-12 Initialize docs/engineering/DEBT.md, docs/engineering/checkpoints/, and docs/engineering/CADENCE.md with debt-entry schema, checkpoint template, feature PR counter, last passed checkpoint, last merge date, and next weekly due date; templates/zero state are not completed review records.
+- [ ] P00-13 Verify the source manifest and committed text against the supplied PDF hashes; audit §13 coverage links and distinguish source requirements, adopted recommendations, and new engineering choices. Record extraction limitations and source-change review procedure.
 - [ ] P00-C Consolidate duplicated requirements and invented layers; remove abstractions without concrete first-loop use; log justified deferrals.
 - [ ] P00-D Publish architecture, domain glossary, protocol/state diagrams, ADRs, and acceptance profile; verify links and terminology.
+- [ ] P00-R Review design against every constitutional invariant; resolve ambiguities at authority, money/resource, and recovery boundaries.
 
 Exit evidence: one unambiguous first-loop design; every critical assumption has a test; proposed defaults are distinguished from requirements.
 
@@ -39,9 +43,9 @@ Depends: P00. Slices: bootstrap/migrations; identity/project authorization; dura
 - [ ] P01-08 Implement per-project event ordering, outbox dispatch claims, duplicate delivery handling, and projection checkpoints.
 - [ ] P01-09 Prove concurrent transactions cannot expose a later resumable sequence before an earlier committed event; define retention/resume-gap behavior.
 - [ ] P01-10 Add audit-safe logging, configuration validation, health/readiness endpoints, and bounded request sizes.
-- [ ] P01-R Review authorization placement, unique constraints, lost updates, event visibility, and secret handling using real PostgreSQL tests.
 - [ ] P01-C Remove redundant model/DTO conversions and generic wrappers; consolidate shared mutation/authorization paths; review dependency footprint.
 - [ ] P01-D Document schema ownership, migrations, transaction semantics, credential lifecycle, configuration, and exact development commands.
+- [ ] P01-R Review authorization placement, unique constraints, lost updates, event visibility, and secret handling using real PostgreSQL tests.
 
 Exit evidence: fresh DB bootstrap; invitation-to-authenticated-project read; revocation and project isolation; transactional event replay under concurrency.
 
@@ -59,9 +63,9 @@ Depends: P01. Slices: work graph/oracles; cells/leases/discovery; governor/moder
 - [ ] P02-08 Implement per-surface governance states, flag/report intake, mute, quarantine, suspension, ban, restoration, and appeal records.
 - [ ] P02-09 Implement credential/user/org freezes, task creation pause, admission pause, and promotion freeze; controls work without deployment.
 - [ ] P02-10 Test account/agent multiplication, concurrent lease acquisition, squat-and-renew patterns, high-volume useful contributors, and shared-household review.
-- [ ] P02-R Review race conditions and moderation privilege boundaries; prove competing private work remains possible despite lease contention.
 - [ ] P02-C Consolidate policy enforcement, expiry machinery, and graph state updates; remove state duplicated across independent handlers.
 - [ ] P02-D Document lease classes, renewals/challenges, owner ceilings, enforcement explanations, appeals, and operator emergency actions.
+- [ ] P02-R Review race conditions and moderation privilege boundaries; prove competing private work remains possible despite lease contention.
 
 Exit evidence: competing contributors discover/claim work; abusive shared actions are bounded; moderators restore participation; durable work remains readable.
 
@@ -80,9 +84,9 @@ Depends: P02. Slices: candidate/artifact model; cheap triage; atomic reservation
 - [ ] P03-09 Add VALIDATION_BUDGET_CONSTRAINED status with reason/eligibility; bound both participant and event queues and define retention/retry policy.
 - [ ] P03-10 Add priority/age/cost/risk scheduling policy and reserved urgent/promotion capacity; expose estimates, actuals, queue age, and spend.
 - [ ] P03-11 Test concurrent double-spend, new-agent budget resets, org membership budget changes, duplicate settlement, cache accounting, and platform versus contributor reruns.
-- [ ] P03-R Review candidate immutability, artifact trust, accounting conservation, and all admission bypass paths.
 - [ ] P03-C Consolidate lifecycle/policy/accounting implementations; remove duplicated status flags and unofficial state machines.
 - [ ] P03-D Document candidate/evidence schemas, credit formula, queue eligibility, failure/refund examples, and bounded storage lifecycle.
+- [ ] P03-R Review candidate immutability, artifact trust, accounting conservation, and all admission bypass paths.
 
 Exit evidence: malformed work costs no expensive execution; credit ceilings hold under concurrency; candidate publication cannot claim trusted verification.
 
@@ -97,18 +101,18 @@ Depends: P03. Slices: runner pilot; job/evidence protocol; hostile workload and 
 - [ ] P04-05 Implement job states, heartbeat/expiry, crash handling, retry limits, dead-letter review, and actual measured settlement.
 - [ ] P04-06 Verify runner attestation binding before granting trusted evidence; late/duplicate/replayed results cannot advance stale jobs.
 - [ ] P04-07 Implement evidence cache keys and invalidation; untrusted self-reports remain visibly distinct from trusted results.
-- [ ] P04-08 Build reproducible web-game fixture with boot, movement, interaction, objective reachability, save/load, fatal-error, and performance checks.
+- [ ] P04-08 Build the runnable seed game and oracle suite specified in P00-10, pin its initial Git commit, and supply a reproducible web-game validation fixture with boot, movement, interaction, objective reachability, save/load, fatal-error, and performance checks.
 - [ ] P04-09 Test fork/process bombs, excessive output, filesystem escape attempts, network exfiltration, disk exhaustion, malicious dependencies, and timeouts.
 - [ ] P04-10 Measure estimates versus actual cost; confirm reservation and platform-rerun pools bound total spend even through worker failure.
-- [ ] P04-R Review actual isolation configuration and results; a fake runner or timeout-only subprocess fails this gate.
 - [ ] P04-C Consolidate runner/protocol error states, remove command-string shortcuts, trim unused execution backends, and simplify environment setup.
 - [ ] P04-D Publish runner provisioning, isolation threat assumptions, job protocol, caps, reproducibility, check costs, and remaining platform limitations.
+- [ ] P04-R Review actual isolation configuration and results; a fake runner or timeout-only subprocess fails this gate.
 
 Exit evidence: real hostile-code isolation; reproducible game checks; measured, capped spending; no control-plane secrets in job execution.
 
 ## P05 - Adjudication and canonical integration
 
-Depends: P04. Slices: selection/ordered revisions; fenced Git promotion; crash/rollback recovery.
+Depends: P04, including the runnable seed baseline from P00-10/P04-08. Slices: selection/ordered revisions; fenced Git promotion; crash/rollback recovery.
 
 - [ ] P05-01 Implement preregistered work-item selection policy, qualifying L3 sequence, candidate-ID tie break, maintainer decisions/deadlines, and superseded history.
 - [ ] P05-02 Create ordered queue entries and immutable integration revisions bound to source candidates, current parent, result tree, constitution, and policy version.
@@ -120,15 +124,15 @@ Depends: P04. Slices: selection/ordered revisions; fenced Git promotion; crash/r
 - [ ] P05-08 Implement audited rollback to known-good tree through a new commit; invalidate affected evidence/descendants and restart queue safely.
 - [ ] P05-09 Publish canonical events and unblock dependencies transactionally after reconciled promotion; repair projections without replaying Git writes.
 - [ ] P05-10 Test two authorities, parallel qualifying candidates, stale parents, constitution changes, conflicts, failing checks, all crash boundaries, and duplicate retries against real Git.
-- [ ] P05-R Review every path capable of touching canonical refs; compare recorded evidence/tree identities with actual Git objects.
 - [ ] P05-C Consolidate promotion/rollback/reconciliation transitions; remove direct-write shortcuts and duplicate winner-selection rules.
 - [ ] P05-D Document adjudication, queue semantics, protected ref setup, promotion recovery table, rollback procedure, and evidence reuse rules.
+- [ ] P05-R Review every path capable of touching canonical refs; compare recorded evidence/tree identities with actual Git objects.
 
 Exit evidence: every promoted tree has exact bound evidence; one auditable winner; crash recovery neither duplicates nor loses successful promotion.
 
 ## P06 - First complete contributor and operator deployment
 
-Depends: P05. Slices: CLI/REST loop; live UI/stream; rehearsal and release gate.
+Depends: P05 and the pinned seed constitution/oracles. Slices: CLI/REST loop; live UI/stream; rehearsal and release gate.
 
 - [ ] P06-01 Provide CLI for authentication, status, discovery, claims, renewals, candidate publish/submit/status, and event watch.
 - [ ] P06-02 Provide resumable authorized WebSocket events with backpressure, pagination/catch-up, heartbeat, deduplication guidance, and retention-gap errors.
@@ -139,9 +143,9 @@ Depends: P05. Slices: CLI/REST loop; live UI/stream; rehearsal and release gate.
 - [ ] P06-07 Run two-human/multiple-agent loop: invitation -> discovery -> lease -> local work -> submission -> admission -> validation -> selection -> promotion -> stream -> dependency unblocking.
 - [ ] P06-08 During the loop inject budget constraint, rejected candidate, mute, quarantine, lease revoke, ban, runner failure, stream reconnect, and rollback; verify readable outcomes.
 - [ ] P06-09 Record service objectives from pilot measurements; narrow unsupported promises and identify event readiness gaps.
-- [ ] P06-R Review end-to-end evidence in real deployment, browser, CLI, and repository; screenshots alone do not prove promotion safety.
 - [ ] P06-C Consolidate API/CLI/UI assumptions and status names; remove demo bypasses, dead endpoints, placeholder buttons, and repeated client logic.
 - [ ] P06-D Publish quickstart, contributor walkthrough, operator guide, API examples, environment manifest, and known limits; a fresh operator follows them.
+- [ ] P06-R Review end-to-end evidence in real deployment, browser, CLI, and repository; screenshots alone do not prove promotion safety.
 
 Exit evidence: first complete deployment including moderation and restart recovery; no mocks at authority or isolation boundaries.
 
@@ -157,9 +161,9 @@ Depends: P06. Slices: threat closure; recovery drills; operational hardening.
 - [ ] P07-06 Implement retention/deletion, artifact/log redaction, audit access controls, abandoned reservation cleanup, and alert routing.
 - [ ] P07-07 Review repository protection/service permissions and practice admission/promotion freeze plus rollback without deployment.
 - [ ] P07-08 Close critical/high findings; assign dated medium findings and capacity risks; repeat checks only for changed or unresolved behavior.
-- [ ] P07-R Review all failure-drill evidence, not just nominal tests; release remains blocked on authority/budget/security/data-loss defects.
 - [ ] P07-C Consolidate retry/backoff/cleanup policies and configuration; remove incident patches with conflicting semantics.
 - [ ] P07-D Publish backup/restore, incident, degraded-state, credential rotation, privacy/retention, and appeal runbooks verified by rehearsal.
+- [ ] P07-R Review all failure-drill evidence, not just nominal tests; release remains blocked on authority/budget/security/data-loss defects.
 
 Exit evidence: practiced recovery, closed release blockers, and a bounded degraded mode that preserves authority and moderation.
 
@@ -177,9 +181,9 @@ Depends: P06; P07 for public use. Slices: contracts/dependencies; messaging/pres
 - [ ] P08-08 Add MCP-compatible tools backed by the same application services, credential scopes, idempotency and budgets as REST/CLI.
 - [ ] P08-09 Run cross-harness contract tests with two different agent clients; replay interrupted sessions and verify neither transport bypasses controls.
 - [ ] P08-10 Test broadcast storms, local blocking, poisoned metadata, index rebuild, presence loss, and permission-filtered search.
-- [ ] P08-R Review transport policy parity, private metadata exposure, notification amplification, and index trust boundaries.
 - [ ] P08-C Remove duplicate state in indexes/UI, consolidate transport adapters, and retire unused presence/discovery scaffolding.
 - [ ] P08-D Publish tool catalog, contracts, scope rules, stream consumption, cross-harness recipes, and index rebuild procedure.
+- [ ] P08-R Review transport policy parity, private metadata exposure, notification amplification, and index trust boundaries.
 
 Exit evidence: collaborating agents observe consistent state and governance across supported transports; director/index never becomes an alternative authority.
 
@@ -195,9 +199,9 @@ Depends: P07-P08. Slices: independent assignments; rewards/spot checks; speculat
 - [ ] P09-06 Add compatible batches with exact-tree validation, failure splitting, offender isolation, and auditable candidate-to-promotion lineage.
 - [ ] P09-07 Implement narrowly justified R0-R1 input-based evidence reuse; R2-R5 retain actual-target checks.
 - [ ] P09-08 Compare serial baseline with speculation/batching: throughput, invalidations/promotion, extra runner cost, tail latency, and rollback recovery.
-- [ ] P09-R Review independence/reward conservation and speculative dependency graphs; reject optimization that trades away canonical evidence.
 - [ ] P09-C Consolidate serial/speculative queue code, prune uneconomic heuristics, and remove reward machinery that lacks measured useful work.
 - [ ] P09-D Document peer trust/rewards/caps, speculation invalidation, batch splitting, cache policies, and benchmark tradeoffs.
+- [ ] P09-R Review independence/reward conservation and speculative dependency graphs; reject optimization that trades away canonical evidence.
 
 Exit evidence: incentives cannot mint unlimited access; promotion guarantees survive batching/rollback; improvements have measured value.
 
@@ -205,7 +209,7 @@ Exit evidence: incentives cannot mint unlimited access; promotion guarantees sur
 
 Depends: P07-P09. Slices: harness/baseline; overload/abuse; full rehearsal and capacity gate.
 
-- [ ] P10-01 Freeze representative workload, environments, budget, offered/admitted rates, latency/error objectives, and durable/ephemeral update split.
+- [ ] P10-01 Classify the §31 numeric workload as required target-event qualification targets, distinct from provisional policy/latency/soak choices; freeze representative workload, environments, budget, offered/admitted rates, latency/error objectives, and durable/ephemeral update split.
 - [ ] P10-02 Build workload drivers for 500 owners, 5,000 agents, 2,000 nodes, 1,000 cells, 100 submissions/minute, and 50,000 updates/minute.
 - [ ] P10-03 Run at least 60 minutes sustained target traffic with actual expensive/cheap check mix and four-hour recovery/soak profile.
 - [ ] P10-04 Run budget-constrained mode, bursts, competing candidates, queue saturation, account multiplication, graph churn, spam, and conflict bombing.
@@ -215,9 +219,9 @@ Depends: P07-P09. Slices: harness/baseline; overload/abuse; full rehearsal and c
 - [ ] P10-08 Practice event freeze/rollback/restoration while target load continues; measure recovery and reconcile all promotion and ledger records.
 - [ ] P10-09 Tune only measured bottlenecks; document whether extra caches/workers/batches improve outcomes and rerun affected profiles.
 - [ ] P10-10 Rehearse operators and moderators with a human-review budget; choose smaller event admission if measured capacity misses targets.
-- [ ] P10-R Review raw results against frozen objectives; distinguish advertised nodes from trusted runner capacity and offered submissions from completed validations.
 - [ ] P10-C Consolidate performance patches/configuration and remove obsolete workarounds; check that cache/partition changes preserve authority semantics.
 - [ ] P10-D Publish reproducible benchmark report, sizing/cost model, backpressure policy, validated limits, and event go/no-go record.
+- [ ] P10-R Review raw results against frozen objectives; distinguish advertised nodes from trusted runner capacity and offered submissions from completed validations.
 
 Exit evidence: measured target workload fits budget and service policy; operators can preserve authority under overload. Failed target means narrow event size or corrective work, not a silent gate waiver.
 
@@ -228,13 +232,13 @@ Depends: P10. Slices: release packaging; dress rehearsal; post-event reconciliat
 - [ ] P11-01 Produce reproducible release tag, migration/config manifest, deployment and rollback instructions, dependency/SBOM record, and operator access list.
 - [ ] P11-02 Verify required CI/reviews, protected refs, credential scopes, backups, caps, alerts, and incident ownership in the actual release environment.
 - [ ] P11-03 Run dress rehearsal from invitation to final playable release, including appeal, outage, budget pause, and rollback.
-- [ ] P11-04 Freeze event constitution/oracles/selection rules, communicate capacity and onboarding policy, and publish participant documentation.
+- [ ] P11-04 Freeze the seed-derived event constitution/oracles/selection rules authored in P00-10 and implemented/pinned in P04-08, communicate capacity and onboarding policy, and publish participant documentation.
 - [ ] P11-05 Run event with live budget/queue/build health, moderator coverage, incident log, and release/blocker decisions.
 - [ ] P11-06 Reconcile all promotions, credit accounts/reservations, winning decisions, artifacts, and unresolved tasks after event closure.
 - [ ] P11-07 Review participant/operator feedback and failure data; prioritize fixes by causal impact, not code volume or speculative future architecture.
-- [ ] P11-R Complete release and post-event authority/security reviews; record remaining limits and blocker closure evidence.
 - [ ] P11-C Dedicate post-event consolidation to temporary overrides, accumulated complexity, flaky checks, stale fixtures, and abandoned features.
 - [ ] P11-D Update actual architecture, runbooks, API/client docs, measured capacity, change log, and next-phase backlog before new features resume.
+- [ ] P11-R Complete release and post-event authority/security reviews; record remaining limits and blocker closure evidence.
 
 Exit evidence: reproducible release and auditable event record; post-event cleanup is completed rather than deferred behind another feature wave.
 
@@ -247,9 +251,9 @@ Depends: P11 and demonstrated need. Not a precondition for the first event.
 - [ ] P12-03 For each new domain define automated/hybrid/human-only oracle, inputs, pass threshold, reliability, check cost, and human review allocation.
 - [ ] P12-04 Trial one new domain at bounded scale; do not inherit software-event throughput claims without validation economics measurements.
 - [ ] P12-05 Revisit permissionless admission only with an explicit owner/escrow/ramp/appeal policy and abuse experiment.
-- [ ] P12-R Review revised threat/cost/authority model and evidence for every expanded claim.
 - [ ] P12-C Retire superseded adapters and duplicated domain policy; resist genericization without two proven uses.
 - [ ] P12-D Publish new ADRs, migration/rollback plans, domain oracle limits, and measured scale profile.
+- [ ] P12-R Review revised threat/cost/authority model and evidence for every expanded claim.
 
 Exit evidence: expansion improves a demonstrated outcome without weakening the original invariants.
 

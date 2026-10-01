@@ -13,7 +13,7 @@
 - [ ] Required checks pass; limitations and unresolved risks are explicit.
 - [ ] Documentation and examples updated, or no-change reason provided.
 - [ ] Debt removed or recorded with owner and resolution gate.
-- [ ] Feature PR counter / recurring checkpoint status recorded.
+- [ ] Feature PR counter / recurring checkpoint status recorded in docs/engineering/CADENCE.md (initialized by P00-12).
 
 ## Risks and follow-up
 

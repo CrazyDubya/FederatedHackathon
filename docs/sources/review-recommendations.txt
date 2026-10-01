@@ -1,0 +1,288 @@
+           STEPHEN / SPECIFICATION REVIEW / 30 SEP 2026
+
+
+
+VERDICT
+
+
+Keep the boundary. Price the shared
+work.
+Review of Federated Swarm Hackathon Platform, System Specification v1.0, September 2026, 22 pages. Separate
+recommendations; the original is unchanged.
+
+
+
+This is a strong architecture. The edge/center boundary is correctly drawn: participants may compute
+freely, while the center governs shared pressure and canonical state. Keep that idea. The gaps are in the
+policies that make it hold at the stated scale, not in the basic model.
+
+What is already right
+
+  Keep                                          Why it matters
+
+  Edge freedom; governed center                 Limit shared attention and shared services, never private compute.
+  §§2.3, 14, 34 (pp. 4, 10-11, 21)              Large private swarms need not become large public queues.
+
+  L0-L4 authority ladder                        Publishing is not verification; verification is not canonical authority.
+  §10 (pp. 8-9)                                 Preserve those separate gates.
+
+  Load as operational metadata                  Coordination load is not a social score. Keep resource accounting
+  §14 (p. 11)                                   private, explainable and surface-specific.
+
+  Moderation in the first deployment            Rate limits, lease revocation, quarantine and bans belong in the
+  §32 (pp. 19-20)                               closed loop, not in a later cleanup release.
+
+
+Four changes before a full-scale event
+1. Put validator work on a real budget. 2. Replace parallel stale-base failure with a sequenced merge
+queue. 3. Make admission budgets resistant to account multiplication. 4. Define competing-candidate
+adjudication and make peer replication worth doing.
+The spec already recognizes integration compute, identity multiplication and speculative batching. These
+recommendations turn those acknowledgments into enforceable policy. They do not propose a second architecture.
+
+Reading this review
+Section and page references point to the supplied v1.0 PDF. Capacity arithmetic is illustrative, not measured
+performance. Proposed defaults are design choices to test, not claims about existing behavior.
+
+
+
+
+Federated Swarm Hackathon Platform - recommendations only                                                          01 / 05
+
+           STEPHEN / SPECIFICATION REVIEW / 30 SEP 2026
+
+
+
+01 / VALIDATION ECONOMICS
+
+
+Make shared validation a budgeted
+service.
+References: §§11-12 (pp. 9-10); §14 (pp. 10-11); §§28, 31-32 (pp. 18-20).
+
+
+
+Problem
+The Governor counts submissions and tracks integration compute, but does not define a unit, reservation
+rule or hard validator budget. Trusted-runner checks are the likely central cost center. Free private
+compute does not make merge simulation, smoke tests or canonical builds free.
+
+Why it breaks at the target
+At §31's 100 submissions/minute, a mean of 5 core-minutes per admitted candidate needs about
+500 continuously busy cores; at 10, about 1,000, before headroom or retries. These are explicit
+assumptions, not benchmarks. Admission filters, selective tests and batching may reduce the rate or
+cost. Advertised participant nodes are not guaranteed trusted-runner capacity.
+
+Concrete recommendation
+
+  Add                               Implement
+
+  Validation credits                Separate from attention envelopes. Define credits in runner resource units,
+                                    with measured CPU/GPU time, memory class and execution deadlines. Credits
+                                    can be event-funded; cash pricing is optional.
+
+  Reserve, settle, cap              At L2 admission, estimate and reserve credits; settle against measured use.
+                                    Require a hard job cap. A higher estimate needs a new reservation. Distinguish
+                                    platform-caused reruns from contributor-caused failures.
+
+  Budget-aware scheduling           Use risk, unblock value, age and cost. Reserve capacity for urgent fixes and
+                                    canonical promotion; age waiting jobs to prevent starvation. Reject cheap
+                                    garbage before charging expensive execution.
+
+  Explicit degraded state           Publish VALIDATION_BUDGET_CONSTRAINED with reason, remaining capacity
+                                    and next eligibility time. Defer costly checks or queue candidates; never
+                                    silently weaken a required evidence gate.
+
+
+Acceptance test
+Drive 100 submissions/minute with costly and cheap candidates. Runner spend stays inside the
+configured budget; queue growth remains visible; urgent fixes retain reserved capacity; failed and
+timed-out jobs cannot consume unbounded resources. Validate that private L0 work remains
+unrestricted.
+Record estimated/actual credits, cache hits, queue age and platform-caused rerun cost. Benchmark the actual test mix
+before sizing the fleet.
+
+
+
+
+Federated Swarm Hackathon Platform - recommendations only                                                      02 / 05
+
+            STEPHEN / SPECIFICATION REVIEW / 30 SEP 2026
+
+
+
+02 / CANONICAL THROUGHPUT
+
+
+Queue the merge, not the invalidation.
+References: §8 (pp. 7-8); §§12-13 (pp. 9-10); §§30-31 (pp. 18-19).
+
+
+
+Problem
+The §13 rule that promotion fails when HEAD changes after validation began is a correct safety guard,
+but a poor scheduling strategy on its own. Parallel validations against one moving HEAD can lose their
+promotion eligibility every time another candidate lands.
+
+Why it breaks at the target
+With 1,000 work cells and typical 10-20 minute leases, one candidate per cell per lease would yield
+roughly 50-100 candidates/minute. That is an illustrative turnover scenario, not a lease completion
+guarantee. Any validation window containing a promotion can invalidate old-head results under the
+current rule, even if changes do not conflict. The spec does not supply promotion frequency or validation
+duration, so the failure rate is not yet quantifiable.
+
+Concrete recommendation
+
+  Stage                            Rule
+
+  Admission / triage               Retain cheap candidate checks and risk-aware scheduling. Record the
+                                   immutable source candidate and its tested base separately from the queued
+                                   merge revision.
+
+  Integration queue                Select an item or compatible batch; rebase or merge it onto the queue's current
+                                   parent; validate that exact resulting tree. One authority advances the ordered
+                                   frontier.
+
+  Promotion                        Use compare-and-swap on the exact validated parent and record the result
+                                   tree, policy version and evidence. Keep the existing single-authority and
+                                   rollback protections.
+
+  Speculation                      Allow parallel look-ahead validation only against explicit queue parents. A failed
+                                   or removed parent invalidates descendants; requeue them. For a failed batch,
+                                   split and isolate the offending change.
+
+  Risk-class reuse                 For R0-R1, reuse isolated evidence only when declared inputs and
+                                   dependencies are unchanged. For R2-R5, require the constitution's integration
+                                   checks on the actual target tree. Never promote an unvalidated tree.
+
+
+Acceptance test
+Run mixed conflicting and disjoint candidates while main advances. Every promotion points to the exact
+validated tree and parent. Measure invalidations per promotion, repeated runner cost, queue latency
+and batch failure recovery. Rollback invalidates dependent speculative work and resumes the queue
+safely.
+Formalize the existing speculative-batch idea rather than relaxing compare-and-swap. Staleness tolerance belongs to
+evidence reuse policy, not to canonical identity.
+
+
+
+
+Federated Swarm Hackathon Platform - recommendations only                                                       03 / 05
+
+            STEPHEN / SPECIFICATION REVIEW / 30 SEP 2026
+
+
+
+03-04 / ADMISSION AND INCENTIVES
+
+
+Close the identity loop. Choose
+winners explicitly.
+References: §§5, 8, 11-15 (pp. 6-12); §§28-29 (p. 18).
+
+
+
+03 / Account multiplication defeats per-identity limits
+§15 names identity multiplication, and §5 links agents to human or organization owners. What is missing
+is an enforceable budget boundary across human accounts. At 100 candidates/minute, ten accounts
+allowed ten submissions each could exhaust the target rate. This is an illustrative policy setting; the
+actual example in §14 differs.
+
+  Policy                           Concrete recommendation
+
+  Budget inheritance               Charge every subordinate credential and agent to its verified owner.
+                                   Organization members consume a shared organization ceiling as well as their
+                                   own envelope. New accounts must not automatically reset consumed capacity.
+
+  Entry and ramp                   For the first event, use sponsor invitations plus a small starter validation
+                                   allocation. Increase it with independently verified useful work. If permissionless
+                                   entry is needed, consider escrow with explicit refund and appeal rules; do not
+                                   pretend OAuth alone proves one human.
+
+  Privacy and fairness             Keep abuse linkage private. A shared network address is a signal, not identity
+                                   proof. Provide manual review for shared labs and households; budget
+                                   restrictions must be explainable and appealable.
+
+
+04 / Verification does not settle competing solutions
+Two L3 candidates for one Work Item can both pass tests. §§12 and 28 expose conflicts and duplicates
+but do not define who wins. Meanwhile PEER_REPLICATED evidence has no stated reward or assignment
+rule, so relying on volunteer replication may leave trusted runners doing the work.
+Adjudication: declare the selection policy on each Work Item before competition starts. Default to the
+earliest qualifying L3 candidate, subject to current-base integration and constitution compliance. Use
+preregistered quality metrics for comparative tasks; use a named maintainer and decision deadline
+where the oracle is incomplete. Record the winning evidence and reason; resolve tied timestamps
+deterministically by candidate ID. Losing work becomes superseded, with history intact.
+Replication: issue bounded validation-credit rewards for assigned, accepted reproductions. Bind each
+attestation to candidate, base, environment, suite and result; exclude self-replication and same-owner
+nodes from independent evidence. Random assignment, trusted spot-checks and event reward caps limit
+collusion. Rewards increase access to shared validation, not canonical authority.
+Test: extra accounts cannot multiply budgets; two qualifying candidates yield one auditable decision; colluding
+replicators cannot mint unlimited credits. Peer evidence never bypasses risk-class promotion rules.
+
+
+
+
+Federated Swarm Hackathon Platform - recommendations only                                                         04 / 05
+
+            STEPHEN / SPECIFICATION REVIEW / 30 SEP 2026
+
+
+
+05 / SMALLER NOTES AND DELIVERY ORDER
+
+
+Right-size the lease. Name the oracle.
+References: §§7-8 (pp. 7-8); §11 (p. 9); §26 (p. 17); §§31-32, 35 (pp. 19-21).
+
+
+
+Lease duration should match the work
+A 10-20 minute lease suits a small fix, not every task. Renewal by visible progress can punish a hard task
+before it produces a commit, while repeated lease challenges add review load. Leases are coordination
+signals, not exclusive ownership; preserve that distinction.
+Add a Work Item task class, expected effort band and checkpoint plan. Either decompose work
+into lease-sized units or use longer class-specific leases with bounded renewals. Accept milestones such
+as a reproduced failure, design artifact or dependency finding. Add challenge cooldowns and evidence
+thresholds; private parallel work stays allowed. Measure expiry/challenge rates by class before setting
+durations.
+
+Generalization requires a usable oracle
+§35's domains vary in how cheaply a result can be checked. Build success and a gameplay smoke test do
+not prove every acceptance criterion. Without cheap, machine-checkable evidence for routine
+promotion, the center becomes a human-review bottleneck rather than a small coordination layer.
+Require each Work Item to name its oracle, reproducible test inputs, pass threshold, check cost
+and unresolved human judgment. Classify checks as automated, hybrid or human-only. Give
+human-only work a separate review budget and narrower throughput promise. Generalize the protocol
+freely; generalize the scale claim only after measuring oracle cost and reliability.
+
+Priority ordering
+
+  When                              Ship / prove
+
+  P0 / Before the first event       Merge-queue semantics and bounded validator execution. Add credit
+                                    reservations and explicit budget-constrained admission. These protect
+                                    canonical safety and central cost together.
+
+  P0 / Before open signup           Owner-level budget inheritance, invite/ramp policy and appeal path. Set the
+                                    per-Work-Item adjudication default. Keep the existing moderation controls in
+                                    the first deployment.
+
+  P1 / Before the 1,000-cell        Benchmark runner demand; test queue invalidation and rollback; add guarded
+  run                               replication rewards and class-aware leases. Load-test the
+                                    100-submissions/minute target.
+
+  P2 / Before new domains           Publish oracle requirements and measured human-review capacity. Do not
+                                    export software-event throughput claims to domains whose validation
+                                    economics differ.
+
+
+Bottom line: keep unlimited thinking at the edge. Make every scarce central resource explicit, every
+canonical promotion reproducible, and every selection decision auditable.
+Source: supplied System Specification v1.0, September 2026, §§2-15, 26, 28-32, 34-35. No external benchmarking is
+claimed. This is an implementation review, not a rewritten specification.
+
+
+
+Federated Swarm Hackathon Platform - recommendations only                                                      05 / 05
+

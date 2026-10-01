@@ -6,14 +6,14 @@
 | --- | --- | --- | --- |
 | Every PR | Scope, code, invariant, test, debt, documentation review | Named reviewer | PR checklist and linked evidence |
 | Every 3 merged feature PRs or weekly during active development | Integrated main review and consolidation | Maintainer | RC-n record and cleanup PRs |
-| Every phase exit | Phase-R, Phase-C, Phase-D | Phase reviewer and maintainer | Phase gate record |
+| Every phase exit | Phase-C -> Phase-D -> Phase-R (final review) | Phase reviewer and maintainer | Phase gate record |
 | Every milestone/release | End-to-end, security, operations, capacity as applicable | Release owner/operator | Go/no-go record |
 | After incident or material authority change | Focused re-review of affected boundaries | Incident owner and reviewer | Incident follow-up |
 | After event | Ledger/promotion reconciliation and consolidation | Event owner | Post-event report and closed cleanup tasks |
 
 Assign real people or explicitly identified reviewing tools at task activation; names are not invented by this plan. If automated review assists, record its scope and findings and who adjudicated them. No requirement to spawn agents. Maintainers review their combined system, not only isolated diffs. High-impact auth, credit, runner, migration, and promotion work requires a second reviewer where available; if unavailable, record the limitation and require a separate review pass before release.
 
-Count feature PRs since the last RC record. Cleanup-only and documentation-only PRs do not increment the feature counter. At a cadence trigger, pause additional feature merges, perform the integrated review, complete required corrective cleanup, update docs, and explicitly reset the counter. Emergency incident fixes may proceed with an incident record and a mandatory follow-up checkpoint before normal feature work resumes.
+The feature counter lives in docs/engineering/CADENCE.md, initialized by P00-12 and updated with each merge; it records counted PR links, last passed RC record, last activity date, and next weekly due date. Count feature PRs since the last RC record. Cleanup-only and documentation-only PRs do not increment the feature counter. At a cadence trigger, pause additional feature merges, perform the integrated review, complete required corrective cleanup, update docs, and explicitly reset the counter. For the weekly trigger, active means at least one implementation, cleanup, or operational-fix PR merged in the preceding seven days; planning/documentation-only work does not activate it. Evaluate cadence at each merge: after an inactive interval, the first such merge starts a seven-day clock; continuing activity requires an RC at least every seven days, or sooner at three feature PRs. No recurring no-change records are required while inactive. Emergency incident fixes may proceed with an incident record and a mandatory follow-up checkpoint before normal feature work resumes.
 
 ## Definition of ready
 
@@ -52,7 +52,7 @@ Do not change public behavior under a cleanup label. If simplification changes s
 
 ## Debt ledger
 
-Create docs/engineering/DEBT.md during P00. Each entry records ID, discovery checkpoint, affected module, concrete defect/shortcut, user or operational impact, evidence, severity, owner, resolution phase/deadline, removal trigger, and linked PR. Closing requires evidence of removal or a documented decision that the item is not debt.
+P00-12 initializes docs/engineering/DEBT.md, docs/engineering/checkpoints/, and docs/engineering/CADENCE.md during P00. Each entry records ID, discovery checkpoint, affected module, concrete defect/shortcut, user or operational impact, evidence, severity, owner, resolution phase/deadline, removal trigger, and linked PR. Closing requires evidence of removal or a documented decision that the item is not debt.
 
 | Class | Treatment |
 | --- | --- |
@@ -101,7 +101,7 @@ Decision: PASS / BLOCKED / NOT APPLICABLE (with reason)
 Next allowed phase/slice:
 ```
 
-A phase passes only after R/C/D all pass. Records refer to an exact commit or reviewed range, so subsequent changes do not inherit a stale approval. Evidence can be concise logs, reproducible command results, scenarios, or benchmark artifacts; do not dump sensitive logs.
+A phase passes only in C -> D -> R order: finish consolidation and documentation, then review their combined final state. Preliminary reviews may generate findings but cannot approve the phase. If final review requires code or documentation edits, perform those edits and renew final review on the resulting state. Records refer to an exact reviewed commit or range and enumerate reviewed files. The gate-record-only commit may reference that reviewed commit without circularly approving itself. Any later implementation, configuration, test, or documentation change requires renewed review of the affected scope before phase exit; merely retaining the old PASS is insufficient. Evidence can be concise logs, reproducible command results, scenarios, or benchmark artifacts; do not dump sensitive logs.
 
 ## Release gate
 

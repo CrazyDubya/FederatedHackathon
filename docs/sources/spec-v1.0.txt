@@ -1,0 +1,1219 @@
+Federated Swarm
+Hackathon Platform
+
+System Specification v1.0
+Reference architecture for a BYOC human-agent software swarm
+
+
+
+
+September 2026
+
+
+
+
+                                      1
+
+Federated Swarm Hackathon Platform                                               System Specification v1.0
+
+
+Contents
+  Executive Summary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         3
+  1. Design Goals . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     3
+  2. Constitutional Invariants . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    4
+  3. High-Level Architecture . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      5
+  4. Participant Edge . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     5
+  5. Identity, Credentials, and Accountability . . . . . . . . . . . . . . . . . . . . . . . . . .      6
+  6. Project Constitution . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     6
+  7. Work Graph . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       7
+  8. Work Cells and Leases . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      7
+  9. Repository Model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       8
+  10. Candidate Lifecycle . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     8
+  11. Evidence and Trust . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      9
+  12. Integration and Canonicalization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      9
+  13. Rollback and Split-Brain Prevention . . . . . . . . . . . . . . . . . . . . . . . . . . . .      10
+  14. The Governor: Shared Contribution Envelopes . . . . . . . . . . . . . . . . . . . . . . .        10
+  15. Abuse Model and Progressive Controls . . . . . . . . . . . . . . . . . . . . . . . . . . .       11
+  16. Community Moderation and Circuit Breakers . . . . . . . . . . . . . . . . . . . . . . .          12
+  17. Task Discovery and Collision Awareness . . . . . . . . . . . . . . . . . . . . . . . . . .       13
+  18. Interface Contracts and Agent-to-Agent Coordination . . . . . . . . . . . . . . . . . . .        13
+  19. Messaging Model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      14
+  20. Protocol Surface . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     14
+  21. Repository Activity Index . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    15
+  22. Game-Specific Validation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     15
+  23. Distributed Validation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     16
+  24. Security Model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     16
+  25. Provenance . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     16
+  26. Event Observability . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    17
+  27. Event Director and Milestones . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      17
+  28. Duplicate Work and Candidate Supersession . . . . . . . . . . . . . . . . . . . . . . . .        18
+  29. Persistence and Authoritative Data . . . . . . . . . . . . . . . . . . . . . . . . . . . .       18
+  30. Event Ordering and Recovery . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        18
+  31. Scaling and Backpressure . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       19
+  32. Minimal Complete Deployment . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        19
+  33. Recommended Implementation Stack . . . . . . . . . . . . . . . . . . . . . . . . . . .           20
+  34. Architectural Boundary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     21
+  35. Generalization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     21
+  36. Final Definition . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .   21
+
+
+
+
+                                                                                                        2
+
+Federated Swarm Hackathon Platform                                                System Specification v1.0
+
+
+  Core principle: Compute is unbounded at the edge. Shared attention is governed. Canon-
+  ical state is authoritative at the center.
+
+
+
+Executive Summary
+The Federated Swarm Hackathon Platform coordinates hundreds or thousands of humans and their
+independently operated AI agents as they collaboratively build one functional software artifact in real
+time. The initial target is a game, but the architecture generalizes to other forms of large-scale software
+construction.
+Participants bring their own compute: laptops, workstations, home servers, cloud VMs, GPUs, coding
+agents, local models, commercial model accounts, and CI runners. The platform does not attempt to
+equalize compute. A participant may bring one agent or ten thousand.
+The platform governs only the scarce shared resources: coordination, task claims, integration capacity,
+review attention, messaging, and canonical repository authority. It should tolerate productive domi-
+nance while preventing denial-of-coordination behavior such as lease squatting, candidate flooding,
+task spam, validation exhaustion, and mass notification abuse.
+The system has four fundamental verbs:
+
+Verb                                                  Meaning
+
+Explore                                               Participants compute, branch, test, simulate, and
+                                                      experiment privately without central limits.
+Coordinate                                            Participants expose intent, work claims,
+                                                      dependencies, interfaces, and activity.
+Propose                                               Participants publish evidence-backed candidate
+                                                      changes.
+Canonicalize                                          The platform verifies, adjudicates, integrates,
+                                                      and advances shared reality.
+
+
+The target outcome is not maximum code production. It is a continuously improving artifact that
+remains coherent, functional, inspectable, and buildable while a large distributed swarm modifies it.
+
+
+
+1. Design Goals
+At any point during an event, contributors should be able to:
+• understand the current state of the project;
+• discover useful work;
+• claim work without permanently owning it;
+• perform arbitrarily large amounts of private computation;
+• publish useful results;
+• cooperate or compete on implementations;
+• communicate dependencies and interface contracts;
+• submit candidates with evidence;
+• observe validation and integration state;
+• inspect or play the latest canonical build;
+• react to regressions, bottlenecks, and opportunities;
+• continue contributing without central assignment.
+The project, meanwhile, must continuously converge toward a functional artifact instead of fragmenting
+into incompatible parallel projects.
+
+
+
+                                                                                                         3
+
+Federated Swarm Hackathon Platform                                             System Specification v1.0
+
+
+Non-goals
+
+The platform is not a cloud IDE, centralized model host, distributed-compute marketplace, generic
+issue tracker, GitHub replacement, fairness mechanism, or permissionless consensus network. It does
+not require one development harness, one model provider, identical hardware, or equal contributor
+influence.
+
+
+
+2. Constitutional Invariants
+These invariants are architectural, not aspirational.
+
+2.1 Canonical main stays playable
+
+The canonical branch represents the best currently accepted functional version of the project. Main is
+never a staging area for speculative work.
+
+2.2 Edge compute has no canonical authority
+
+Participant nodes may claim that code works and may attach evidence. They may not declare their
+work canonical.
+
+2.3 Claims are leases, not ownership
+
+Tasks, modules, files, and interfaces cannot be permanently captured by speed or compute. Coordina-
+tion claims expire.
+
+2.4 Private work is unrestricted
+
+The platform does not throttle local coding, inference, branching, testing, simulation, experimentation,
+or speculative implementation.
+
+2.5 Shared operations are governed
+
+The platform may throttle task claims, candidate publication, integration requests, messaging, depen-
+dency mutations, review requests, and other actions that impose shared cost.
+
+2.6 Dominance is allowed
+
+A participant may legitimately contribute a disproportionate amount of the final artifact. Contribution
+volume alone is not abusive.
+
+2.7 Denial of coordination is not allowed
+
+No participant may use scale to exhaust shared coordination capacity, squat on work, or prevent others
+from participating.
+
+2.8 Canonical history is auditable
+
+Every canonical change has traceable provenance, source commits, validation evidence, integration
+decision, and resulting canonical commit.
+  Community rule: You may bring an army. You may not demand that everyone else get
+  out of its way.
+
+
+
+
+                                                                                                      4
+
+Federated Swarm Hackathon Platform                                           System Specification v1.0
+
+
+3. High-Level Architecture
+┌─────────────────────────────────────────────────────────────┐
+│                    PARTICIPANT EDGE                          │
+│ Humans • Agents • Local CI • GPUs • Cloud • IDEs • Models │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                        Swarm Protocol
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    COORDINATION PLANE                        │
+│ Identity • Work Graph • Leases • Presence • Messaging      │
+│ Dependencies • Interfaces • Activity • Discovery           │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      GOVERNOR PLANE                          │
+│ Rate Control • Abuse Detection • Trust • Moderation          │
+│ Contention • Admission • Backpressure • Circuit Breakers     │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    INTEGRATION PLANE                         │
+│ Candidates • Evidence • Validation • Merge Queue             │
+│ Conflict Analysis • Verification • Promotion • Rollback    │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     CANONICAL PLANE                          │
+│ Repository • Main • Builds • Releases • Playable Artifact │
+└─────────────────────────────────────────────────────────────┘
+The center should not try to become smarter or larger than the swarm. Its purpose is to make the
+swarm composable.
+
+
+
+4. Participant Edge
+A participant edge node is any contributor-controlled execution environment: a laptop, desktop, home
+server, cloud VM, cluster, coding-agent service, CI runner, or local LLM host.
+The central platform makes no assumption about implementation. Participants may expose zero or
+more execution nodes and may optionally advertise capabilities.
+{
+    "node_id": "node_83_a10",
+    "owner": "user_83",
+    "capabilities": {
+      "os": "linux",
+      "arch": "x86_64",
+      "cpu_cores": 24,
+      "memory_gb": 128,
+      "gpu": ["nvidia-a10-24gb"],
+      "runtimes": ["python3.12", "node22"],
+      "services": ["build", "test", "browser", "game-runner", "llm-inference"]
+    }
+
+                                                                                                    5
+
+Federated Swarm Hackathon Platform                                             System Specification v1.0
+
+
+}
+Capability publication is informational unless the node explicitly accepts a distributed validation job.
+Participants do not need to expose their local infrastructure to other participants.
+
+
+
+5. Identity, Credentials, and Accountability
+Every entity interacting with shared state must operate under an authenticated identity.
+Human Account
+    ├── Agent Credential
+    ├── Agent Credential
+    ├── Node Credential
+    └── Node Credential
+Every shared action is attributable to a human owner, subordinate credential, agent or node, session,
+and timestamp. Agent identities remain subordinate to a human or organization identity, and creden-
+tials must be individually revocable.
+This allows a user to run a large private swarm while preserving accountability at the shared boundary.
+
+
+
+6. Project Constitution
+Each event defines a versioned, machine-readable Project Constitution. It constrains the artifact with-
+out centrally assigning every implementation detail.
+project:
+  type: game
+  engine: web
+  canonical_branch: main
+
+product:
+  genre: cooperative_mystery
+  perspective: third_person
+  target_session_minutes: 30
+
+pillars:
+  - exploration
+  - cooperation
+  - environmental_puzzles
+
+constraints:
+  startup_seconds_max: 8
+  fps_target: 60
+  save_system_required: true
+
+requires_approval:
+  - new_core_progression_system
+  - networking_architecture_change
+  - persistent_schema_change
+
+prohibited:
+  - external_paid_runtime_dependency
+  - destructive_repository_rewrite
+Changes to the Constitution are themselves governed canonical events.
+
+
+
+
+                                                                                                      6
+
+Federated Swarm Hackathon Platform                                        System Specification v1.0
+
+
+7. Work Graph
+The central coordination primitive is a Work Graph, not a flat issue list. A Work Item represents
+something the project needs and may depend on, unblock, or conflict with other work.
+id: NAV-284
+title: Prevent enemies from clipping through doors
+type: bug
+status: available
+
+scope:
+  modules:
+    - src/navigation
+    - src/enemies
+
+dependencies:
+  - COLLISION-88
+
+acceptance:
+  - enemies cannot cross closed doors
+  - open doors remain traversable
+  - existing navigation tests pass
+
+priority: high
+created_by: user-102
+leases: []
+Work Item states:
+proposed → available → active / contested / blocked → candidate → integrated
+Items may also become superseded, abandoned, or rejected.
+The Work Graph should be acyclic where practical, while tolerating cycles for mutually dependent
+architectural work.
+
+
+
+8. Work Cells and Leases
+A Work Cell is one active implementation attempt. One Work Item may have several competing Work
+Cells.
+cell_id: NAV-284-C3
+work_item: NAV-284
+owner: user-83
+agents:
+  - agent-coder-7
+  - agent-test-2
+
+base_commit: a18ef2
+expected_paths:
+  - src/navigation/**
+  - tests/navigation/**
+
+lease_expires_at: 14:18:22
+status: active
+A lease says:
+  This contributor is actively attempting this work and wants the swarm to know.
+It does not say:
+
+
+                                                                                                 7
+
+Federated Swarm Hackathon Platform                                               System Specification v1.0
+
+
+  Everyone else is prohibited from touching this work.
+Typical lease lifetime is 10-20 minutes. Renewal requires evidence of progress such as commits, test
+results, dependency updates, or explicit heartbeat. Abandoned leases expire automatically.
+
+Contention states
+
+
+                                     Active cells   Coordination state
+
+                                               0    Available
+                                               1    Active
+                                             2-3    Contested
+                                             4+     Saturated
+
+
+Saturation does not prevent private work. It may prevent additional coordination leases unless policy
+or a maintainer overrides it.
+
+Lease challenges
+
+Participants may challenge a lease for abandonment, excessive inactive claims, speculative reser-
+vation, critical blocking, invalid scope, or territorial capture. The coordinator evaluates lease age,
+progress, recent submissions, breadth of claims, contention, and dependency criticality.
+Possible outcomes include shortening, revoking, demoting, or allowing parallel work against the lease.
+
+
+
+9. Repository Model
+There is one logical project repository. Participants may use clones, forks, branches, worktrees, mirrors,
+or any compatible Git workflow.
+The platform identifies work by commits rather than depending on pull requests as the fundamental
+protocol.
+A candidate submission includes at minimum:
+base commit
+candidate commit
+work cell
+changed paths
+claimed acceptance criteria
+evidence bundle
+Pull requests may exist as a convenient human interface, but the candidate is the authoritative coor-
+dination object.
+
+
+
+10. Candidate Lifecycle
+Contributions move through five authority levels:
+L0   PRIVATE         Local experimentation only
+L1   PUBLISHED       Visible to the community
+L2   CANDIDATE       Formally requests canonical consideration
+L3   VERIFIED        Passed required validation
+L4   CANONICAL       Integrated into main
+A participant may generate effectively unlimited L0 work. Governance becomes progressively stricter
+as work approaches L4.
+
+                                                                                                        8
+
+Federated Swarm Hackathon Platform                                                  System Specification v1.0
+
+
+This is the core defense against compute-based crowding: large private swarms are cheap to the
+community until they ask the shared system to pay attention.
+
+
+
+11. Evidence and Trust
+Participant-controlled systems may attach evidence to a candidate.
+{
+    "candidate": "7ab102",
+    "reported_results": {
+       "unit_tests": {"passed": 182, "failed": 0},
+       "fps": 74,
+       "startup_ms": 4201
+    },
+    "artifacts": ["test-report.json", "gameplay.webm", "screenshot.png"]
+}
+Participant evidence is useful for triage but is not automatically authoritative.
+Evidence classes:
+1. SELF_REPORTED - contributor claims the result.
+2. PEER_REPLICATED - independent participant nodes reproduce it.
+3. TRUSTED_RUNNER - event-operated validator reproduces it.
+4. CANONICAL_VALIDATION - the promotion pipeline verifies it against canonical policy.
+
+Risk classes
+
+
+                     Class   Typical examples
+
+                     R0      Documentation, harmless assets
+                     R1      Isolated UI or content
+                     R2      Ordinary gameplay logic
+                     R3      Cross-cutting systems
+                     R4      Critical infrastructure
+                     R5      Build, security, save schema, repository, architecture
+
+
+Higher-risk candidates require stronger evidence and more restrictive promotion.
+
+
+
+12. Integration and Canonicalization
+No ordinary participant pushes directly to canonical main.
+Candidates enter the Integration Plane, which may perform:
+• schema validation;
+• diff inspection;
+• dependency analysis;
+• static analysis;
+• targeted tests;
+• merge simulation;
+• conflict analysis;
+• trusted execution;
+• reference rendering;
+• gameplay smoke tests;
+• performance checks;
+
+                                                                                                           9
+
+Federated Swarm Hackathon Platform                                             System Specification v1.0
+
+
+• canonical build.
+The integration queue is not strict FIFO. Scheduling considers dependency criticality, risk, downstream
+blocked work, candidate age, conflicting submissions, system load, and contributor admission capacity.
+
+Speculative integration
+
+Compatible candidates may be validated together.
+Candidate A     audio
+Candidate B     menu
+Candidate C     enemy behavior
+Candidate D     save schema
+
+Possible batches:
+main + A + B + C
+main + D
+This reduces duplicated validation while isolating high-risk changes.
+
+Promotion record
+
+{
+    "canonical_commit": "ff1282",
+    "previous_commit": "f77192",
+    "candidates": ["candidate-172", "candidate-181"],
+    "validation": "validation-8892",
+    "promoted_at": "2026-09-30T18:42:12Z"
+}
+Canonical Main is therefore the authoritative shared reality.
+
+
+
+13. Rollback and Split-Brain Prevention
+Every promotion must support rapid rollback for severe regressions, corruption, security issues, perfor-
+mance collapse, or integration incompatibility.
+A rollback is itself a canonical event. Downstream work based on the reverted state is marked for
+rebase or revalidation.
+Only one Canonical Authority may promote at a time. Promotion should use a leader lease, database
+transaction, promotion sequence, and repository compare-and-swap. A promotion fails if canonical
+HEAD changed after validation began.
+
+
+
+14. The Governor: Shared Contribution Envelopes
+The system does not limit participant compute. It limits shared-system pressure.
+Each identity receives a dynamic Coordination Envelope across dimensions such as:
+active leases
+new leases/minute
+published candidates/minute
+integration requests/minute
+new tasks/minute
+messages/minute
+mentions/minute
+dependency mutations/minute
+Example:
+
+                                                                                                     10
+
+Federated Swarm Hackathon Platform                                           System Specification v1.0
+
+
+{
+    "active_leases": 12,
+    "candidate_submissions_per_minute": 4,
+    "integration_requests_per_minute": 2,
+    "task_creation_per_minute": 5,
+    "broadcast_messages_per_minute": 8
+}
+Useful contributors may receive larger envelopes. The system should not penalize contributors merely
+because they are fast or prolific.
+
+Coordination Load
+
+The Governor monitors the external cost a participant imposes on the shared environment:
+• failed validation volume;
+• duplicate submissions;
+• conflict generation;
+• abandoned leases;
+• integration compute consumed;
+• human review demand;
+• task churn;
+• notification volume;
+• dependency churn;
+• canonical rollbacks;
+• invalid requests.
+Coordination Load is operational metadata, not a public social score. No single reputation number is
+required.
+
+
+
+15. Abuse Model and Progressive Controls
+The platform must defend against malicious and accidental overload, including:
+• submission flooding;
+• lease squatting;
+• task flooding;
+• dependency poisoning;
+• notification flooding;
+• conflict bombing;
+• validation exhaustion;
+• identity multiplication;
+• malicious code.
+Governance states:
+NORMAL
+  ↓
+RATE_LIMITED
+  ↓
+QUEUED
+  ↓
+SHADOW
+  ↓
+MUTED
+  ↓
+QUARANTINED
+  ↓
+SUSPENDED
+  ↓
+
+                                                                                                   11
+
+Federated Swarm Hackathon Platform                                             System Specification v1.0
+
+
+BANNED
+These controls may apply independently to different surfaces. A contributor can, for example, remain
+able to submit code while being muted from global messaging.
+
+Rate limited
+
+Shared actions slow while local work continues. The system explains which operation is constrained
+and why.
+
+Queued
+
+Excess submissions enter a participant-specific queue. This forces large private swarms to perform
+their own triage rather than externalizing every output.
+
+Shadow
+
+Activity may appear accepted locally while remaining non-authoritative pending moderation. This is
+useful for suspected automation malfunction, spam, or compromised credentials and should be tightly
+audited.
+
+Muted
+
+The identity may be blocked from global broadcast, mass mentions, automated messaging, or shared
+chat while retaining code participation.
+
+Quarantined
+
+The identity can inspect project state and perform private work but cannot automatically acquire sig-
+nificant leases, mutate the global task graph, or enter the ordinary integration queue. Moderators may
+promote individual contributions manually.
+
+Suspended / banned
+
+Suspension temporarily disables participation. Ban revokes event access, API tokens, agent credentials,
+node credentials, and signing keys.
+
+
+
+16. Community Moderation and Circuit Breakers
+Ordinary participants may:
+• flag candidates;
+• report spam or malicious behavior;
+• mark duplicates;
+• challenge leases;
+• request moderator review;
+• locally block another participant.
+Trusted moderators may:
+• reduce shared-action limits;
+• revoke leases;
+• mute;
+• quarantine;
+• suspend;
+• ban;
+• restore privileges.
+
+
+                                                                                                     12
+
+Federated Swarm Hackathon Platform                                             System Specification v1.0
+
+
+Emergency maintainers must be able to immediately freeze a credential, user, organization, candidate
+admission, task creation, messaging, or canonical promotion, and may place the repository in read-only
+mode.
+These controls must not require a new deployment.
+
+
+
+17. Task Discovery and Collision Awareness
+Agents need a machine-readable answer to:
+    What useful work can I do right now?
+Example request:
+{
+    "skills": ["typescript", "gameplay"],
+    "budget_minutes": 15,
+    "collision_tolerance": "low"
+}
+Example response:
+{
+    "recommended": [
+      {
+        "task": "ENEMY-188",
+        "reason": [
+          "unblocked",
+          "high downstream value",
+          "matching skills",
+          "low contention"
+        ]
+      }
+    ]
+}
+Recommendations are advisory. Participants remain free to work elsewhere.
+The platform maintains a live collision map:
+src/player/             18 active cells
+src/combat/             51 active cells
+src/network/            72 active cells
+src/audio/               6 active cells
+src/tutorial/            3 active cells
+Agents can query activity, conflicts, leases, and interfaces by path or module before writing code.
+
+
+
+18. Interface Contracts and Agent-to-Agent Coordination
+Agents may publish temporary or canonical interface contracts so independent implementations can
+proceed without waiting for each other.
+interface GrappleAnimation {
+  start(anchor: Vec3): void;
+  update(tension: number): void;
+  release(): void;
+}
+Contract lifecycle:
+proposed → accepted-for-work → canonical → deprecated / superseded
+
+
+                                                                                                      13
+
+Federated Swarm Hackathon Platform                                            System Specification v1.0
+
+
+Agents may also advertise needs and capabilities:
+NEED:
+animation interface for grapple system
+
+PROVIDES:
+grapple physics implementation
+The coordinator can recommend useful connections without forcing communication.
+
+
+
+19. Messaging Model
+Messaging scopes:
+direct
+work-cell
+task
+module
+team
+event
+system
+The larger the scope, the stricter the rate and authority rules. Global event broadcast should require
+elevated authority.
+Local blocking suppresses direct messages, notifications, and optional activity feeds without altering
+shared canonical state.
+
+
+
+20. Protocol Surface
+The control plane should expose HTTP APIs, a resumable WebSocket event stream, and an MCP-
+compatible adapter.
+Core conceptual operations:
+project.status
+project.constitution
+
+work.list
+work.get
+work.propose
+work.claim
+work.release
+work.challenge
+
+cell.create
+cell.update
+cell.complete
+
+activity.path
+activity.module
+activity.user
+
+dependency.add
+dependency.remove
+
+interface.publish
+interface.get
+
+
+
+                                                                                                    14
+
+Federated Swarm Hackathon Platform                                              System Specification v1.0
+
+
+candidate.publish
+candidate.submit
+candidate.status
+candidate.withdraw
+
+validation.get
+
+integration.queue
+integration.status
+
+message.send
+message.subscribe
+
+moderation.flag
+moderation.block
+
+Event stream
+
+Clients should not continuously poll. The server exposes a resumable ordered stream such as:
+task.created
+task.updated
+lease.created
+lease.expired
+candidate.submitted
+candidate.verified
+candidate.rejected
+canonical.promoted
+canonical.rolled_back
+participant.throttled
+dependency.unblocked
+constitution.updated
+Each event includes an event ID, project sequence number, timestamp, type, subject, actor, and pay-
+load. Clients resume from the last observed sequence number.
+
+
+
+21. Repository Activity Index
+The coordinator maintains a derived index of files, symbols, modules, tests, owners, active cells, recent
+commits, interfaces, dependencies, and candidate touches.
+Git remains authoritative for source history. The index exists only to make coordination queries fast.
+Views such as current leases, task state, heat maps, candidate queues, and dependency closures
+should be reconstructable from authoritative records and event history wherever practical.
+
+
+
+22. Game-Specific Validation
+The game is a particularly useful proving ground because success is observable.
+Canonical checks may include:
+• game launches;
+• main menu loads;
+• new game starts;
+• player can move;
+• player can interact;
+• save succeeds;
+• load succeeds;
+
+                                                                                                      15
+
+Federated Swarm Hackathon Platform                                             System Specification v1.0
+
+
+• critical objective remains reachable;
+• no fatal console errors;
+• performance remains above a minimum threshold.
+Participants may publish gameplay video, screenshots, input replays, telemetry, crash logs, save files,
+and performance traces. These artifacts may automatically generate Work Items.
+
+
+
+23. Distributed Validation
+BYOC nodes may optionally accept validation jobs.
+Coordinator request:
+commit
+environment requirements
+test command
+artifact requirements
+job nonce
+Node response:
+exit status
+logs
+artifacts
+environment identity
+timing
+signature
+Important claims may be sent to multiple independent nodes. Reproduction increases confidence, but
+replication is not consensus over canonical state. Canonical authority remains centralized.
+
+
+
+24. Security Model
+Participant code must be assumed hostile.
+Trusted validators require strong isolation:
+• ephemeral execution environments;
+• restricted filesystem access;
+• no production credentials;
+• restricted network access;
+• execution timeouts;
+• CPU and memory limits;
+• process limits;
+• artifact and output limits;
+• syscall restrictions where available;
+• dependency-cache isolation;
+• secret scanning.
+Candidate code must never receive control-plane credentials.
+High-risk supply-chain modifications include changes to package manifests, lockfiles, build scripts, CI
+definitions, binary artifacts, remote download URLs, and runtime permissions.
+
+
+
+25. Provenance
+Every published artifact should retain lineage:
+human owner
+agent identity, when applicable
+source commit
+
+                                                                                                     16
+
+Federated Swarm Hackathon Platform                                              System Specification v1.0
+
+
+base commit
+timestamp
+work cell
+toolchain metadata, when provided
+Generated artifacts should remain traceable back to the candidate and evidence bundle that produced
+them.
+
+
+
+26. Event Observability
+A live dashboard should make the software swarm legible.
+Humans online:                   487
+Agents connected:              3,821
+Nodes advertised:              1,104
+
+Active work cells:                844
+Contested work items:             127
+Blocked work items:               219
+
+Candidates queued:                   74
+Candidates validating:               16
+Verified awaiting merge:              8
+
+Canonical build:                 PASS
+Canonical FPS:                     61
+Last promotion:                  42 sec ago
+The dashboard should also show module activity, contention, blocked dependencies, submission pres-
+sure, validation pressure, and candidate conflicts.
+
+Bottleneck detection
+
+The coordinator should surface high-leverage tasks:
+NAV-291
+
+Blocks:
+83 work cells
+14 features
+3 canonical milestones
+Such bottlenecks become strong task recommendations.
+
+
+
+27. Event Director and Milestones
+The Event Director is a system role, not necessarily an AI model. It maintains milestone state, surfaces
+bottlenecks, detects neglected areas, suggests priorities, protects the Constitution, and helps manage
+integration pressure.
+It does not own canonical authority.
+Example milestones:
+M0 repository boots
+M1 movement playable
+M2 core gameplay loop
+M3 first complete level
+M4 save/load
+M5 optional advanced feature set
+
+                                                                                                      17
+
+Federated Swarm Hackathon Platform                                             System Specification v1.0
+
+
+M6 content complete
+M7 stabilization
+M8 final release
+Work Items may declare milestone relevance.
+
+
+
+28. Duplicate Work and Candidate Supersession
+The system should detect likely duplicates using task similarity, affected modules, semantic descrip-
+tions, diff similarity, and symbol overlap.
+Duplicates are not automatically rejected. Competing implementations may be valuable; the coordi-
+nator simply makes them visible.
+A newer candidate may explicitly supersede an older one. Superseded candidates leave the active
+integration queue without erasing their history.
+Cheap garbage suppression should reject malformed metadata, nonexistent bases, empty candidates,
+obvious duplicates, forbidden changes, oversized artifacts, known-superseded commits, invalid signa-
+tures, and rate-policy violations before expensive validation begins.
+
+
+
+29. Persistence and Authoritative Data
+Recommended authoritative storage:
+PostgreSQL for:
+• identities and credentials;
+• project and Constitution;
+• Work Graph;
+• Work Cells and leases;
+• governance state;
+• candidate metadata;
+• events;
+• moderation actions;
+• integration records.
+Git remains authoritative for source history.
+Object storage holds logs, videos, screenshots, builds, test artifacts, and replays.
+An optional cache/presence layer such as Redis may improve high-frequency ephemeral workloads but
+should not become authoritative.
+
+
+
+30. Event Ordering and Recovery
+The control plane maintains an append-only project event sequence:
+884128 lease.created
+884129 candidate.submitted
+884130 task.updated
+884131 canonical.promoted
+This supports replay, debugging, client resumption, audit, and reconstruction of derived views.
+If the Coordination Plane restarts:
+1. canonical repository remains unaffected;
+2. authoritative records and event history persist;
+3. active leases are reconstructed;
+4. expired leases are cleared;
+5. clients resume from sequence number;
+
+                                                                                                     18
+
+Federated Swarm Hackathon Platform                                            System Specification v1.0
+
+
+6. integration safely resumes or retries;
+7. duplicate canonical promotion remains impossible.
+
+
+
+31. Scaling and Backpressure
+Initial event target
+
+500 humans
+5,000 active agents
+2,000 advertised nodes
+1,000 simultaneous work cells
+100 candidate submissions/minute
+50,000 presence/event updates/minute
+
+Future architectural target
+
+50,000 humans
+500,000 agents
+100,000 active work cells
+The API, event stream, presence layer, read models, search, and activity indexes should scale horizon-
+tally. Canonical integration may remain comparatively centralized.
+When overloaded, the system degrades in this order:
+1. reduce low-priority presence frequency;
+2. coalesce activity events;
+3. slow task creation;
+4. queue candidate admission;
+5. reduce expensive distributed validation;
+6. preserve canonical integration;
+7. preserve moderation;
+8. preserve repository access.
+The system should remain readable even when writes are heavily constrained.
+
+
+
+32. Minimal Complete Deployment
+The first deployable version must support the entire closed loop:
+participant authenticates
+        ↓
+reads project state
+        ↓
+agent requests useful work
+        ↓
+participant acquires lease
+        ↓
+work occurs locally
+        ↓
+candidate is published
+        ↓
+admission policy accepts candidate
+        ↓
+candidate enters integration queue
+        ↓
+trusted validator checks candidate
+        ↓
+
+                                                                                                    19
+
+Federated Swarm Hackathon Platform                                            System Specification v1.0
+
+
+candidate passes
+        ↓
+canonical authority merges candidate
+        ↓
+main advances
+        ↓
+canonical.promoted event broadcasts
+        ↓
+dependent work automatically unblocks
+The same first complete deployment must include moderation primitives for rate limiting, muting, lease
+revocation, quarantine, suspension, and ban. Without those controls, the central architectural problem
+remains unsolved.
+
+
+
+33. Recommended Implementation Stack
+A practical vendor-neutral stack:
+
+                 Layer               Suggested technology
+
+                 Control plane       Go, Rust, or Python/FastAPI
+                 Authoritative DB    PostgreSQL
+                 Repository          Git + GitHub/GitLab-compatible remote
+                 Events              WebSocket + durable ordered event sequence
+                 Object storage      S3-compatible storage
+                 Presence/cache      Redis, optional
+                 Trusted execution   Ephemeral VMs or hardened containers
+                 Protocol            REST + WebSocket + MCP adapter
+                 Frontend            React or server-rendered web UI
+                 Authentication      OAuth + event-issued scoped credentials
+
+
+Core authoritative entities
+
+User
+Credential
+Agent
+Node
+Project
+Constitution
+Milestone
+WorkItem
+WorkCell
+Lease
+LeaseChallenge
+InterfaceContract
+Dependency
+Candidate
+CandidateArtifact
+Evidence
+Validation
+IntegrationBatch
+Promotion
+Rollback
+Message
+Flag
+                                                                                                    20
+
+Federated Swarm Hackathon Platform                                           System Specification v1.0
+
+
+ModerationAction
+GovernanceState
+RatePolicy
+ProjectEvent
+
+
+
+34. Architectural Boundary
+The design ultimately reduces to one boundary:
+EDGE
+
+may think
+may compute
+may experiment
+may propose
+may test
+may claim evidence
+
+────────────────────────────────────────────
+
+CENTER
+
+coordinates
+governs shared pressure
+verifies where necessary
+adjudicates integration
+controls canonical reality
+The center is intentionally smaller than the swarm.
+Its job is not to decide how much intelligence a participant may bring. Its job is to make arbitrary
+amounts of distributed intelligence work on one artifact without turning shared development into a
+denial-of-service attack.
+
+
+
+35. Generalization
+Although the first use case is a game-building event, the architecture is not game-specific. The same
+substrate can coordinate open-source development, major refactors, scientific software, data com-
+petitions, simulation construction, emergency engineering, mass collaborative research, or agentic
+software factories.
+A game is simply an unusually good proving ground because its success signals are rich and immediate:
+it builds
+it renders
+it responds
+it can be played
+it can be observed
+it can fail visibly
+
+
+
+36. Final Definition
+The Federated Swarm Hackathon Platform is a centralized coordination and canonicalization
+layer over decentralized human-and-agent computation.
+Participants may bring whatever compute, agents, tools, and models they can marshal. The platform
+governs only what crosses into shared coordination and canonical reality.
+
+
+                                                                                                   21
+
+Federated Swarm Hackathon Platform                                              System Specification v1.0
+
+
+The architecture succeeds when the swarm can become arbitrarily large without forcing the center to
+execute every idea, trust every claim, accept every task reservation, or surrender the integrity of main.
+  Explore freely. Coordinate explicitly. Propose with evidence. Canonicalize carefully.
+
+
+
+
+                                                                                                      22
+
