@@ -121,7 +121,7 @@ Each phase contains implementation slices and a mandatory review/consolidation/d
 | P11 | Release, event operations, post-event consolidation | P10 | Reproducible release, practiced runbooks, public measured limits |
 | P12 | Future scaling and additional domains | P11 and evidence of need | New bottlenecks/oracles measured before new claims |
 
-Critical path: P00 -> P01 -> P02 -> P03 -> P04 -> P05 -> P06 -> P07 -> P10 -> P11. P08 and P09 complete the target feature set before the full event. Smaller invite-only rehearsals may occur after P07 using explicitly narrower capability and capacity promises.
+Required event dependency sequence: P00 -> P01 -> P02 -> P03 -> P04 -> P05 -> P06; then both P07 and P08 must complete before P09 -> P10 -> P11. P08 implementation may overlap P07 after P06, but public use waits for P07. P10 cannot start qualification before P07, P08, and P09 pass their gates. A duration-based critical path will be calculated once phase estimates exist; this prerequisite sequence is not a lead-time estimate. Smaller invite-only rehearsals may occur after P07 using explicitly narrower capability and capacity promises; they do not satisfy full-event P10/P11 readiness.
 
 Do not give calendar estimates before P00 and the real runner pilot establish effort and cost. At each phase exit, estimate the next phase using observed delivery rate, review effort, and unresolved dependencies. Identify a named implementer, reviewer, and operator per active slice; no unowned work enters the committed delivery window.
 
