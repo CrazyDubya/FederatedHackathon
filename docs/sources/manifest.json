@@ -1,0 +1,22 @@
+{
+  "supplied_date": "2026-09-30",
+  "extraction": "pdftotext -layout; form feeds replaced with newline; UTF-8 text",
+  "sources": [
+    {
+      "title": "System Specification v1.0",
+      "uploaded_filename": "Federated_Swarm_Hackathon_Platform_Spec_v1.0(1).pdf",
+      "pdf_sha256": "249ddb870eb9b6ca1c013901ea474a1e48c28c024232b41f8b8394a1108e4e27",
+      "pdf_bytes": 156246,
+      "text_path": "spec-v1.0.txt",
+      "text_sha256": "dc6291b532d7ab3446d5e3cdd3939215d45b81e4987a91f8c69be5a5383ce5ee"
+    },
+    {
+      "title": "Review Recommendations",
+      "uploaded_filename": "Federated-Swarm-Review-Recommendations.pdf",
+      "pdf_sha256": "09b9fd2047fe3588c1901cfd5cecfbcd27d7804416faebd7e7cdd0e4deafb630",
+      "pdf_bytes": 79486,
+      "text_path": "review-recommendations.txt",
+      "text_sha256": "01aee1d6572a565f13aaa4f34da12f59e4c975f560fe3c866466c994434bfe43"
+    }
+  ]
+}
