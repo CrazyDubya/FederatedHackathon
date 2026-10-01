@@ -50,7 +50,7 @@ P00-11 schedules a development-only walking skeleton after minimal state/protoco
 | Trusted execution | External isolated ephemeral runner with enforceable limits | Candidate code runs outside the control plane. No Docker requirement; choose a VM or equivalent isolation implementation in P04. |
 | Presence/cache | Optional, introduced only after measurement | Never authoritative; Redis is a later option, not an initial prerequisite. |
 
-These are proposed choices. Record binding decisions in ADRs during P00. Do not install dependencies, provision external services, or execute participant code merely to implement these documents.
+The [P00-01 ADR set](../adr/README.md) records these choices, alternatives and reversal triggers; it becomes the design baseline when its PR merges. ADRs own decision detail; this table remains a summary. Concrete provider/package/version compatibility is intentionally verified by its named implementation tasks. Do not install dependencies, provision external services, or execute participant code merely to implement these documents.
 
 ## 4. Module boundaries
 
