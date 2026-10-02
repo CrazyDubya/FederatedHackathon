@@ -10,7 +10,7 @@ Split each phase into the suggested PR slices below. Slice order follows depende
 
 Dependencies: supplied spec and recommendations. Suggested slices: decisions; state/protocol contracts; acceptance/threat model.
 
-- [ ] P00-01 Create ADRs for runtime, PostgreSQL authority, modular boundaries, Git remote, runner isolation, object storage, OAuth, and no required Docker workflow; document alternatives and reversal triggers.
+- [ ] P00-01 Create ADRs for runtime, PostgreSQL authority, modular boundaries, Git remote, runner isolation, object storage, OAuth, and no required Docker workflow; document alternatives and reversal triggers. [ADR deliverable](../adr/README.md) authored by Codex; status: review pending. Acceptance review: topic coverage, alternatives, verification gates, and reversal triggers; no runtime compatibility is claimed.
 - [ ] P00-02 Define owners, organizations, memberships, invitation sponsorship, role matrix, credential scopes, and cross-project authorization rules.
 - [ ] P00-03 Define L0-L4 transitions, work-item/cell/lease states, evidence classes, risk R0-R5, and required checks per class.
 - [ ] P00-04 Specify REST contracts, error codes, idempotency semantics, pagination, versioning, event schema, WebSocket resumption, and MCP parity requirements.

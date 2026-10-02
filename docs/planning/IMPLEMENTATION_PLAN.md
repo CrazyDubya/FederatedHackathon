@@ -39,7 +39,7 @@ P00-11 schedules a development-only walking skeleton after minimal state/protoco
 
 | Area | Proposed baseline | Reason and decision gate |
 | --- | --- | --- |
-| Control plane | Python 3.12, FastAPI, modular monolith | Small operational surface and explicit domain modules. P00 confirms runtime/dependency compatibility. |
+| Control plane | Python 3.12, FastAPI, modular monolith | Small operational surface and explicit domain modules. P01 confirms runtime/dependency compatibility (ADR 0001); P00 records the decision only. |
 | Authority | PostgreSQL with versioned migrations | Transactions, unique constraints, row locks, and concurrent worker safety are needed from the first real loop. SQLite may be an edge cache, not a second authoritative backend. |
 | Source history | Git; GitHub-compatible remote adapter | Local bare repositories support deterministic integration tests; remote promotion needs recovery/reconciliation. |
 | Durable events | PostgreSQL event log and transactional outbox | State and event creation commit together; deliveries are at least once, with sequence-aware client deduplication. |
@@ -50,7 +50,7 @@ P00-11 schedules a development-only walking skeleton after minimal state/protoco
 | Trusted execution | External isolated ephemeral runner with enforceable limits | Candidate code runs outside the control plane. No Docker requirement; choose a VM or equivalent isolation implementation in P04. |
 | Presence/cache | Optional, introduced only after measurement | Never authoritative; Redis is a later option, not an initial prerequisite. |
 
-These are proposed choices. Record binding decisions in ADRs during P00. Do not install dependencies, provision external services, or execute participant code merely to implement these documents.
+The [P00-01 ADR set](../adr/README.md) records these choices, alternatives and reversal triggers; it becomes the design baseline when its PR merges. ADRs own decision detail; this table remains a summary. Concrete provider/package/version compatibility is intentionally verified by its named implementation tasks. Do not install dependencies, provision external services, or execute participant code merely to implement these documents.
 
 ## 4. Module boundaries
 

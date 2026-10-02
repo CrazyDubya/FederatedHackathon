@@ -4,6 +4,10 @@ A coordination and canonicalization platform for humans and independently operat
 
 Private computation is unrestricted. Shared operations are budgeted. Canonical repository state has one auditable authority.
 
+## Architecture decisions
+
+See the [P00-01 ADR set](docs/adr/README.md) for initial choices, alternatives, verification gates, and reversal triggers. Decisions become the design baseline when their PR merges; runtime verification remains in later phases.
+
 ## Implementation planning
 
 - [Delivery plan](docs/planning/IMPLEMENTATION_PLAN.md): architecture, dependencies, milestones, operational requirements, and readiness gates.
