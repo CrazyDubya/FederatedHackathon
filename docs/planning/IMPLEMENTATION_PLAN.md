@@ -39,7 +39,7 @@ P00-11 schedules a development-only walking skeleton after minimal state/protoco
 
 | Area | Proposed baseline | Reason and decision gate |
 | --- | --- | --- |
-| Control plane | Python 3.12, FastAPI, modular monolith | Small operational surface and explicit domain modules. P00 confirms runtime/dependency compatibility. |
+| Control plane | Python 3.12, FastAPI, modular monolith | Small operational surface and explicit domain modules. P01 confirms runtime/dependency compatibility (ADR 0001); P00 records the decision only. |
 | Authority | PostgreSQL with versioned migrations | Transactions, unique constraints, row locks, and concurrent worker safety are needed from the first real loop. SQLite may be an edge cache, not a second authoritative backend. |
 | Source history | Git; GitHub-compatible remote adapter | Local bare repositories support deterministic integration tests; remote promotion needs recovery/reconciliation. |
 | Durable events | PostgreSQL event log and transactional outbox | State and event creation commit together; deliveries are at least once, with sequence-aware client deduplication. |
